@@ -20,7 +20,7 @@ public class Company {
 
     private String directorName;
 
-    @ManyToOne
+    @OneToOne
     private Address address;
 
 }

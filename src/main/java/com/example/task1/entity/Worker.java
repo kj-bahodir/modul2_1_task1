@@ -10,15 +10,18 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class Department {
+public class Worker {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     private String name;
 
+    private String phoneNumber;
+
     @ManyToOne
-    private Company company;
+    private Address address;
 
-
+    @ManyToOne
+    private Department department;
 }

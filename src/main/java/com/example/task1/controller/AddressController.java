@@ -6,9 +6,15 @@ import com.example.task1.payload.ApiResponse;
 import com.example.task1.service.AddressService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("address")
@@ -17,31 +23,44 @@ public class AddressController {
     AddressService addressService;
 
     @GetMapping
-    public List<Address> getAddresses() {
+    public ResponseEntity<List<Address>> getAddresses() {
         List<Address> addresses = addressService.getAddresses();
-        return addresses;
+        return ResponseEntity.ok(addresses);
     }
 
     @GetMapping("/{id}")
-    public Address getAddress(@PathVariable Integer id) {
+    public ResponseEntity<Address> getAddress(@PathVariable Integer id) {
         Address address = addressService.getAddressById(id);
-        return address;
+        return ResponseEntity.ok(address);
     }
 
     @PostMapping
-    public ApiResponse addAddress(@RequestBody AddressDto addressDto) {
+    public ResponseEntity<?> addAddress(@RequestBody AddressDto addressDto) {
         ApiResponse apiResponse = addressService.addAddress(addressDto);
-        return apiResponse;
+        return ResponseEntity.status(apiResponse.isSuccess()? HttpStatus.CREATED:HttpStatus.CONFLICT).body(apiResponse);
     }
     @PutMapping("/{id}")
-    public ApiResponse editAddress(@PathVariable Integer id, @RequestBody AddressDto addressDto){
+    public ResponseEntity<?> editAddress(@PathVariable Integer id, @RequestBody AddressDto addressDto){
         ApiResponse apiResponse=addressService.editAddress(id,addressDto);
-        return apiResponse;
+        return ResponseEntity.status(apiResponse.isSuccess()?HttpStatus.ACCEPTED:HttpStatus.CONFLICT).body(apiResponse);
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse deleteAddress(@PathVariable Integer id){
+    public ResponseEntity<?> deleteAddress(@PathVariable Integer id){
         ApiResponse apiResponse=addressService.deleteAddress(id);
-        return apiResponse;
+        return ResponseEntity.status(apiResponse.isSuccess()?202:409).body(apiResponse);
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public Map<String,String> handledValidationExeptions(
+            MethodArgumentNotValidException ex){
+        Map<String,String> errors=new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error)->{
+            String fieldName=((FieldError) error).getField();
+            String errorMessage=error.getDefaultMessage();
+            errors.put(fieldName,errorMessage);
+        });
+        return errors;
     }
 }

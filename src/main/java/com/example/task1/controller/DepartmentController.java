@@ -5,9 +5,15 @@ import com.example.task1.payload.ApiResponse;
 import com.example.task1.payload.DepartmentDto;
 import com.example.task1.service.DepartmentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("department")
@@ -16,30 +22,42 @@ public class DepartmentController {
     DepartmentService departmentService;
 
     @GetMapping
-    public List<Department> getDepartments(){
+    public ResponseEntity< List<Department>> getDepartments(){
       List<Department> departments=  departmentService.getDepartments();
-      return departments;
+      return ResponseEntity.ok(departments);
     }
 
     @GetMapping("/{id}")
-    public Department getDepartment(@PathVariable Integer id){
+    public ResponseEntity< Department> getDepartment(@PathVariable Integer id){
         Department department=departmentService.getDepartment(id);
-        return department;
+        return ResponseEntity.ok(department);
     }
     @PostMapping
-    public ApiResponse addDepartment(@RequestBody DepartmentDto departmentDto){
+    public ResponseEntity<?> addDepartment(@RequestBody DepartmentDto departmentDto){
         ApiResponse apiResponse=departmentService.addDepartment(departmentDto);
-        return apiResponse;
+        return ResponseEntity.status(apiResponse.isSuccess()? HttpStatus.CREATED:HttpStatus.CONFLICT).body(apiResponse);
     }
-    @PostMapping("/{id}")
-    public ApiResponse editDepartment(@PathVariable Integer id, @RequestBody DepartmentDto departmentDto){
+    @PutMapping("/{id}")
+    public ResponseEntity<?> editDepartment(@PathVariable Integer id, @RequestBody DepartmentDto departmentDto){
         ApiResponse apiResponse=departmentService.editDepartment(id,departmentDto);
-        return apiResponse;
+        return ResponseEntity.status(apiResponse.isSuccess()?HttpStatus.ACCEPTED:HttpStatus.CONFLICT).body(apiResponse);
     }
     @DeleteMapping("/{id}")
-    public ApiResponse deleteDepartment(@PathVariable Integer id){
+    public ResponseEntity<?> deleteDepartment(@PathVariable Integer id){
         ApiResponse apiResponse=departmentService.deleteDepartment(id);
-        return apiResponse;
+        return ResponseEntity.status(apiResponse.isSuccess()?202:409).body(apiResponse);
+    }
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public Map<String,String> handledValidationExeptions(
+            MethodArgumentNotValidException ex){
+        Map<String,String> errors=new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error)->{
+            String fieldName=((FieldError) error).getField();
+            String errorMessage=error.getDefaultMessage();
+            errors.put(fieldName,errorMessage);
+        });
+        return errors;
     }
 
 }

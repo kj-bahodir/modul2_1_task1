@@ -1,8 +1,9 @@
 package com.example.task1.payload;
 
-import com.example.task1.entity.Company;
 
+import lombok.Data;
 
+@Data
 public class DepartmentDto {
 
     private String name;

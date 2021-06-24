@@ -33,6 +33,18 @@ public class CompanyController {
        return apiResponse;
     }
 
+    @PutMapping("/{id}")
+    public ApiResponse editCompany(@PathVariable Integer id, @RequestBody CompanyDto companyDto){
+        ApiResponse apiResponse=companyService.editCompany(id,companyDto);
+        return apiResponse;
+    }
+
+    @DeleteMapping("/{id}")
+    public ApiResponse deleteCompany(@PathVariable Integer id){
+        ApiResponse apiResponse=companyService.deleteCompany(id);
+        return apiResponse;
+    }
+
 
 
 }

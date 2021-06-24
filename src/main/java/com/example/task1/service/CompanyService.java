@@ -8,6 +8,7 @@ import com.example.task1.repository.AddressRepository;
 import com.example.task1.repository.CompanyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import java.util.List;
 import java.util.Optional;
@@ -45,8 +46,35 @@ public class CompanyService {
             companyRepository.save(company);
             return new ApiResponse("Successfully added", true);
         }
-        return new ApiResponse("Such address not found",false);
+        return new ApiResponse("Such address not found", false);
     }
 
 
+    public ApiResponse editCompany(Integer id, CompanyDto companyDto) {
+        Optional<Company> optionalCompany = companyRepository.findById(id);
+        if (!optionalCompany.isPresent()) {
+            return new ApiResponse("Company not found", false);
+        }
+        Company company = optionalCompany.get();
+
+        Optional<Address> optionalAddress = addressRepository.findById(id);
+        if (optionalAddress.isPresent()) {
+            Address address = optionalAddress.get();
+            company.setAddress(address);
+        }
+        company.setCorpName(companyDto.getCorpName());
+        company.setDirectorName(companyDto.getDirectorName());
+        companyRepository.save(company);
+        return new ApiResponse("Company edited", true);
+    }
+
+
+    public ApiResponse deleteCompany(Integer id) {
+        try {
+            companyRepository.deleteById(id);
+            return new ApiResponse("Company deleted", true);
+        } catch (Exception e) {
+            return new ApiResponse("Company not found", false);
+        }
+    }
 }

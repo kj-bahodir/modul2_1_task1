@@ -17,6 +17,7 @@ public class Worker {
 
     private String name;
 
+    @Column(unique = true)
     private String phoneNumber;
 
     @ManyToOne
